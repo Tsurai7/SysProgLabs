@@ -6,8 +6,9 @@
 
 #define PATH_MAX 200
 
-void walk_directory(const char *dir_path, int show_dirs, int show_files, int show_links) {
-    DIR *dir = opendir(dir_path);
+void dirwalk(const char *dirPath, int showDirs, int showFiles, int showLinks) {
+
+    DIR *dir = opendir(dirPath);
 
     if (dir == NULL) {
         perror("opendir");
@@ -17,22 +18,29 @@ void walk_directory(const char *dir_path, int show_dirs, int show_files, int sho
     struct dirent *entry;
 
     while ((entry = readdir(dir)) != NULL) {
+
         if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
             continue;
         }
 
-        char full_path[PATH_MAX];
-        snprintf(full_path, PATH_MAX, "%s/%s", dir_path, entry->d_name);
+        char fullPath[PATH_MAX];
+
+        snprintf(fullPath, PATH_MAX, "%s/%s", dirPath, entry->d_name);
 
         if (entry->d_type == DT_DIR) {
-            if (show_dirs) {
-                printf("%s\n", full_path);
+            if (showDirs) {
+                printf("%s\n", fullPath);
             }
-            walk_directory(full_path, show_dirs, show_files, show_links);
-        } else if (entry->d_type == DT_REG && show_files) {
-            printf("%s\n", full_path);
-        } else if (entry->d_type == DT_LNK && show_links) {
-            printf("%s\n", full_path);
+
+            dirwalk(fullPath, showDirs, showFiles, showLinks);
+        }
+
+        else if (entry->d_type == DT_REG && showFiles) {
+            printf("%s\n", fullPath);
+        }
+
+        else if (entry->d_type == DT_LNK && showLinks) {
+            printf("%s\n", fullPath);
         }
     }
 
@@ -40,26 +48,27 @@ void walk_directory(const char *dir_path, int show_dirs, int show_files, int sho
 }
 
 int main(int argc, char *argv[]) {
-    const char *dir_path = argc > 1 ? argv[1] : ".";
 
-    int show_dirs = 1;
-    int show_files = 1;
-    int show_links = 1;
+    const char *dirPath = argc > 1 ? argv[1] : ".";
+
+    int showDirs = 1;
+    int showFiles = 1;
+    int showLinks = 1;
 
     int option;
 
     while ((option = getopt(argc, argv, "ldf")) != -1) {
         switch (option) {
             case 'l':
-                show_links = 0;
+                showDirs = 0;
                 break;
             case 'd':
-                show_dirs = 1;
-                show_files = 0;
+                showDirs = 1;
+                showFiles = 0;
                 break;
             case 'f':
-                show_dirs = 0;
-                show_files = 1;
+                showDirs = 0;
+                showFiles = 1;
                 break;
             default:
                 fprintf(stderr, "Usage: %s [dir] [-l] [-d] [-f]\n", argv[0]);
@@ -67,7 +76,7 @@ int main(int argc, char *argv[]) {
         }
     }
 
-    walk_directory(dir_path, show_dirs, show_files, show_links);
+    dirwalk(dirPath, showDirs, showFiles, showLinks);
 
     return 0;
 }
