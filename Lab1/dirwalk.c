@@ -4,79 +4,93 @@
 #include <string.h>
 #include <unistd.h>
 
-#define PATH_MAX 200
+#define PATH_LEN 1024
 
-void dirwalk(const char *dirPath, int showDirs, int showFiles, int showLinks) {
+struct options {
+    int show_files;
+    int show_dirs;
+    int show_links;
+    int sort;
+};
 
-    DIR *dir = opendir(dirPath);
+void dirwalk(const char *dir_path, int depth, struct options opt) {
+
+    DIR *dir = opendir(dir_path);
+    struct dirent *entry;
 
     if (dir == NULL) {
-        perror("opendir");
+        perror("Error opening directory");
         exit(EXIT_FAILURE);
     }
 
-    struct dirent *entry;
-
     while ((entry = readdir(dir)) != NULL) {
-
-        if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-            continue;
-        }
-
-        char fullPath[PATH_MAX];
-
-        snprintf(fullPath, PATH_MAX, "%s/%s", dirPath, entry->d_name);
-
         if (entry->d_type == DT_DIR) {
-            if (showDirs) {
-                printf("%s\n", fullPath);
+            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
+                continue;
             }
 
-            dirwalk(fullPath, showDirs, showFiles, showLinks);
-        }
+            for (int i = 0; i < depth; i++) {
+                printf("  ");
+            }
 
-        else if (entry->d_type == DT_REG && showFiles) {
-            printf("%s\n", fullPath);
-        }
+            if (opt.show_dirs) {
+                printf("[%s]\n", entry->d_name);
+            }
 
-        else if (entry->d_type == DT_LNK && showLinks) {
-            printf("%s\n", fullPath);
+            char path[PATH_LEN];
+            snprintf(path, PATH_LEN, "%s/%s", dir_path, entry->d_name);
+
+            dirwalk(path, depth + 1, opt);
+        } else if (entry->d_type == DT_REG && opt.show_files) {
+            for (int i = 0; i < depth; i++) {
+                printf("  ");
+            }
+            printf("%s\n", entry->d_name);
+        } else if (entry->d_type == DT_LNK && opt.show_links) {
+            for (int i = 0; i < depth; i++) {
+                printf("  ");
+            }
+            printf("%s\n", entry->d_name);
         }
     }
 
-    closedir(dir);
+    if (closedir(dir) == -1) {
+        perror("Error closing directory");
+        exit(EXIT_FAILURE);
+    }
 }
 
 int main(int argc, char *argv[]) {
 
-    const char *dirPath = argc > 1 ? argv[1] : ".";
-
-    int showDirs = 1;
-    int showFiles = 1;
-    int showLinks = 1;
+    /*struct options opts = {0, 0, 0, 0};
 
     int option;
 
-    while ((option = getopt(argc, argv, "ldf")) != -1) {
+    while ((option = getopt(argc, argv, "ldfs")) != -1) {
         switch (option) {
             case 'l':
-                showDirs = 0;
+                opts.show_links = 1;
                 break;
             case 'd':
-                showDirs = 1;
-                showFiles = 0;
+                opts.show_dirs = 1;
                 break;
             case 'f':
-                showDirs = 0;
-                showFiles = 1;
+                opts.show_files = 1;
+                break;
+            case 's':
+                opts.sort = 1;
                 break;
             default:
-                fprintf(stderr, "Usage: %s [dir] [-l] [-d] [-f]\n", argv[0]);
+                fprintf(stderr, "Usage: %s [-l] [-d] [-f] [-s]\n", argv[0]);
                 exit(EXIT_FAILURE);
         }
     }
 
-    dirwalk(dirPath, showDirs, showFiles, showLinks);
+    if (argc != 0) {
+        opts = (struct options){1, 1, 1, 1};
+    } */
+
+    dirwalk("./", 0, (struct options){1, 1, 1, 0});
 
     return 0;
 }
