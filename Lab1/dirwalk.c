@@ -3,6 +3,7 @@
 #include <dirent.h>
 #include <string.h>
 #include <getopt.h>
+#include <locale.h>
 
 struct options {
     int show_files;
@@ -10,6 +11,15 @@ struct options {
     int show_links;
     int sort;
 };
+
+struct option long_options[] = {
+    {"show-links", no_argument, 0, 'l'},
+    {"show-dirs", no_argument, 0, 'd'},
+    {"show-files", no_argument, 0, 'f'},
+    {"sort", no_argument, 0, 's'},
+    {0, 0, 0, 0}
+};
+
 
 int comparer(const struct dirent** first, const struct dirent** second) {
     return strcoll((*first)->d_name, (*second)->d_name);
@@ -50,7 +60,7 @@ void dirwalk(const char *dir_path,  struct options *opts) {
         }
 
         else if(opts->show_links && entry->d_type == DT_LNK) {
-            printf("Link: [%s]\n", entry->d_name);
+            printf("Link: %s\n", entry->d_name);
         }
 
         free(entry);
@@ -63,11 +73,13 @@ void dirwalk(const char *dir_path,  struct options *opts) {
 
 int main(int argc, char *argv[]) {
 
-    struct options opts = {1, 0, 0, 0};
+    struct options opts = {0, 0, 0, 0};
 
+    int option_index;
     int option;
+    setlocale(LC_COLLATE, "");
 
-    while ((option = getopt(argc, argv, "ldfs")) != -1) {
+    while ((option = getopt_long(argc, argv, "ldfs", long_options, &option_index)) != -1) {
         switch (option) {
             case 'l':
                 opts.show_links = 1;
@@ -95,7 +107,7 @@ int main(int argc, char *argv[]) {
         opts = (struct options){1, 1, 1, 1};
     }
 
-    dirwalk("/Users/tsurai/Documents/Testdir", &opts);
+    dirwalk(argv[1], &opts);
 
     return 0;
 }
