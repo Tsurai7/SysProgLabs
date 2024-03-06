@@ -2,9 +2,7 @@
 #include <stdlib.h>
 #include <dirent.h>
 #include <string.h>
-#include <unistd.h>
-
-#define PATH_LEN 1024
+#include <getopt.h>
 
 struct options {
     int show_files;
@@ -13,56 +11,59 @@ struct options {
     int sort;
 };
 
-void dirwalk(const char *dir_path, int depth, struct options opt) {
-
-    DIR *dir = opendir(dir_path);
-    struct dirent *entry;
-
-    if (dir == NULL) {
-        perror("Error opening directory");
-        exit(EXIT_FAILURE);
-    }
-
-    while ((entry = readdir(dir)) != NULL) {
-        if (entry->d_type == DT_DIR) {
-            if (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0) {
-                continue;
-            }
-
-            for (int i = 0; i < depth; i++) {
-                printf("  ");
-            }
-
-            if (opt.show_dirs) {
-                printf("[%s]\n", entry->d_name);
-            }
-
-            char path[PATH_LEN];
-            snprintf(path, PATH_LEN, "%s/%s", dir_path, entry->d_name);
-
-            dirwalk(path, depth + 1, opt);
-        } else if (entry->d_type == DT_REG && opt.show_files) {
-            for (int i = 0; i < depth; i++) {
-                printf("  ");
-            }
-            printf("%s\n", entry->d_name);
-        } else if (entry->d_type == DT_LNK && opt.show_links) {
-            for (int i = 0; i < depth; i++) {
-                printf("  ");
-            }
-            printf("%s\n", entry->d_name);
-        }
-    }
-
-    if (closedir(dir) == -1) {
-        perror("Error closing directory");
-        exit(EXIT_FAILURE);
-    }
+int comparer(const struct dirent** first, const struct dirent** second) {
+    return strcoll((*first)->d_name, (*second)->d_name);
 }
+
+void dirwalk(const char *dir_path,  struct options *opts) {
+    struct dirent** entries;
+
+    int res = scandir(dir_path, &entries, NULL, opts->sort ? &comparer : NULL);
+
+    if (res == -1) {
+        printf("Error opening directory %s\n", dir_path);
+        return;
+    }
+
+    for (int i = 0; i < res; ++i) {
+        struct dirent *entry = entries[i];
+
+        if (entry->d_type == DT_DIR &&
+            (strcmp(entry->d_name, ".") == 0 || strcmp(entry->d_name, "..") == 0))
+                continue;
+
+        char* new_path = calloc(strlen(dir_path) + strlen(entry->d_name) + 2,sizeof(char));
+        strcpy(new_path, dir_path);
+        strcat(new_path, "/");
+        strcat(new_path, entry->d_name);
+
+        if (entry->d_type == DT_DIR) {
+            dirwalk(new_path, opts);
+        }
+
+        if (opts->show_files == 1 && entry->d_type == DT_REG) {
+            printf("File: %s\n", entry->d_name);
+        }
+
+        else if(opts->show_dirs == 1 && entry->d_type == DT_DIR) {
+            printf("[%s]\n", entry->d_name);
+        }
+
+        else if(opts->show_links && entry->d_type == DT_LNK) {
+            printf("Link: [%s]\n", entry->d_name);
+        }
+
+        free(entry);
+        free(new_path);
+    }
+
+    free(entries);
+}
+
 
 int main(int argc, char *argv[]) {
 
-    /*struct options opts = {0, 0, 0, 0};
+    struct options opts = {1, 0, 0, 0};
 
     int option;
 
@@ -70,27 +71,31 @@ int main(int argc, char *argv[]) {
         switch (option) {
             case 'l':
                 opts.show_links = 1;
+                printf("links ");
                 break;
             case 'd':
                 opts.show_dirs = 1;
+                printf("dirs ");
                 break;
             case 'f':
                 opts.show_files = 1;
+                printf("files ");
                 break;
             case 's':
                 opts.sort = 1;
+                printf("sort ");
                 break;
             default:
-                fprintf(stderr, "Usage: %s [-l] [-d] [-f] [-s]\n", argv[0]);
-                exit(EXIT_FAILURE);
+                printf("Usage: path [-l] [-d] [-f] [-s]\n");
+                exit(1);
         }
     }
 
-    if (argc != 0) {
+    if (argc < 3) {
         opts = (struct options){1, 1, 1, 1};
-    } */
+    }
 
-    dirwalk("./", 0, (struct options){1, 1, 1, 0});
+    dirwalk("/Users/tsurai/Documents/Testdir", &opts);
 
     return 0;
 }
