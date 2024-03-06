@@ -13,9 +13,9 @@ struct options {
 };
 
 struct option long_options[] = {
-    {"show-links", no_argument, 0, 'l'},
-    {"show-dirs", no_argument, 0, 'd'},
-    {"show-files", no_argument, 0, 'f'},
+    {"show_links", no_argument, 0, 'l'},
+    {"show_dirs", no_argument, 0, 'd'},
+    {"show_files", no_argument, 0, 'f'},
     {"sort", no_argument, 0, 's'},
     {0, 0, 0, 0}
 };
@@ -72,30 +72,26 @@ void dirwalk(const char *dir_path,  struct options *opts) {
 
 
 int main(int argc, char *argv[]) {
+    setlocale(LC_COLLATE, "");
 
     struct options opts = {0, 0, 0, 0};
 
     int option_index;
     int option;
-    setlocale(LC_COLLATE, "");
 
     while ((option = getopt_long(argc, argv, "ldfs", long_options, &option_index)) != -1) {
         switch (option) {
             case 'l':
                 opts.show_links = 1;
-                printf("links ");
                 break;
             case 'd':
                 opts.show_dirs = 1;
-                printf("dirs ");
                 break;
             case 'f':
                 opts.show_files = 1;
-                printf("files ");
                 break;
             case 's':
                 opts.sort = 1;
-                printf("sort ");
                 break;
             default:
                 printf("Usage: path [-l] [-d] [-f] [-s]\n");
