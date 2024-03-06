@@ -25,7 +25,7 @@ int comparer(const struct dirent** first, const struct dirent** second) {
     return strcoll((*first)->d_name, (*second)->d_name);
 }
 
-void dirwalk(const char *dir_path,  struct options *opts) {
+void dirwalk(char *dir_path,  struct options *opts) {
     struct dirent** entries;
 
     int res = scandir(dir_path, &entries, NULL, opts->sort ? &comparer : NULL);
@@ -73,7 +73,6 @@ void dirwalk(const char *dir_path,  struct options *opts) {
 
 int main(int argc, char *argv[]) {
     setlocale(LC_COLLATE, "");
-
     struct options opts = {0, 0, 0, 0};
 
     int option_index;
@@ -95,7 +94,7 @@ int main(int argc, char *argv[]) {
                 break;
             default:
                 printf("Usage: path [-l] [-d] [-f] [-s]\n");
-                exit(1);
+                break;
         }
     }
 
@@ -103,7 +102,7 @@ int main(int argc, char *argv[]) {
         opts = (struct options){1, 1, 1, 1};
     }
 
-    dirwalk(argv[1], &opts);
+    dirwalk(argv[optind], &opts);
 
     return 0;
 }

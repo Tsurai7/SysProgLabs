@@ -3,6 +3,7 @@
 *.d
 *.xml
 *.iml
+.DS_Store
 
 # Object files
 *.o
