@@ -5,12 +5,14 @@
 #include <getopt.h>
 #include <locale.h>
 
+
 struct options {
     int show_files;
     int show_dirs;
     int show_links;
     int sort;
 };
+
 
 struct option long_options[] = {
     {"show_links", no_argument, 0, 'l'},
@@ -24,6 +26,7 @@ struct option long_options[] = {
 int comparer(const struct dirent** first, const struct dirent** second) {
     return strcoll((*first)->d_name, (*second)->d_name);
 }
+
 
 void dirwalk(char *dir_path,  struct options *opts) {
     struct dirent** entries;
@@ -74,7 +77,6 @@ void dirwalk(char *dir_path,  struct options *opts) {
 int main(int argc, char *argv[]) {
     setlocale(LC_COLLATE, "");
     struct options opts = {0, 0, 0, 0};
-
     int option_index;
     int option;
 
@@ -100,6 +102,8 @@ int main(int argc, char *argv[]) {
 
     if (argc < 3) {
         opts = (struct options){1, 1, 1, 1};
+        dirwalk("./", &opts);
+        return 0;
     }
 
     dirwalk(argv[optind], &opts);

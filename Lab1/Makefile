@@ -1,6 +1,6 @@
 CC = gcc
-CFLAGS_DEBUG = -W -Wall -Wextra -std=c11 -g
-CFLAGS_RELEASE = -W -Wall -Wextra -std=c11 -O2
+CFLAGS_DEBUG = -g -ggdb -std=c11 -pedantic -W -Wall -Wextra
+CFLAGS_RELEASE = -std=c11 -pedantic -W -Wall -Wextra -Werror
 .PHONY: clean all
 MODE ?= debug
 ifeq ($(MODE), debug)
