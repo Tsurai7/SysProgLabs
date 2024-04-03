@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <locale.h>
-#include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
 #include <sys/types.h>
@@ -19,7 +18,7 @@ int compare(const void *a, const void *b)
     return strcoll((const char *)a, (const char *)b);
 }
 
-bool get_variables(const char *path, char ***buffer)
+int getVariables(const char *path, char ***buffer)
 {
     FILE *file = NULL;
 
@@ -37,39 +36,39 @@ bool get_variables(const char *path, char ***buffer)
 
         fclose(file);
 
-        return true;
+        return 1;
     }
 
     perror("File error");
 
-    return false;
+    return 0;
 }
 
-bool find_child_path_envp(char **envp, char **path_child)
+int findChildPathEnvp(char **envp, char **path_child)
 {
     size_t ind = 0;
     size_t len = strlen(ENVIRONMENT_VALUE_CHILD);
 
-    bool flag_find = false;
+    int flag_find = 0;
 
     while (envp[ind])
     {
-        flag_find = true;
+        flag_find = 1;
         for (size_t i = 0; i < len; ++i)
         {
             if (envp[ind][i] != ENVIRONMENT_VALUE_CHILD[i])
             {
-                flag_find = false;
+                flag_find = 1;
                 break;
             }
         }
-        if (flag_find == true)
+        if (flag_find == 1)
             break;
         ind++;
     }
 
-    if (flag_find == false)
-        return false;
+    if (flag_find == 0)
+        return 0;
 
     printf("%s\n", envp[ind]);
 
@@ -86,10 +85,10 @@ bool find_child_path_envp(char **envp, char **path_child)
     }
 
     path_child[ind] = '\0';
-    return true;
+    return 1;
 }
 
-void increment_child_xx(char **file_name)
+void incrementChild(char **file_name)
 {
     if ((*file_name)[7] == '9')
     {
@@ -108,11 +107,11 @@ int main(int argc, char *argv[], char *envp[])
 
     char *path = argv[PATH_ENVIRONMENT_FILE];
     char **array_variables = (char **)calloc(INITIAL_SIZE, sizeof(char *));
-    bool flag_alloc_memory = false;
+    int flag_alloc_memory = 0;
 
-    if (get_variables(path, &array_variables))
+    if (getVariables(path, &array_variables))
     {
-        flag_alloc_memory = true;
+        flag_alloc_memory = 1;
 
         qsort(array_variables, INITIAL_SIZE, sizeof(char *), compare);
 
@@ -122,7 +121,6 @@ int main(int argc, char *argv[], char *envp[])
         char *child_name = (char *)malloc(9);
         strcpy(child_name, "child_00");
         char *newargv[] = {child_name, path, NULL, NULL};
-        bool flag_continue = true;
 
         do
         {
@@ -134,15 +132,15 @@ int main(int argc, char *argv[], char *envp[])
             {
                 pid_t pid = fork();
                 newargv[NAME_BUTTON] = "+";
+
                 if (pid == 0)
                 {
                     const char *path_child = getenv(ENVIRONMENT_VALUE_CHILD);
                     execve("./child", newargv, envp);
                 }
                 else
-                {
-                    increment_child_xx(&child_name);
-                }
+                    incrementChild(&child_name);
+
                 break;
             }
 
@@ -150,15 +148,15 @@ int main(int argc, char *argv[], char *envp[])
             {
                 pid_t pid = fork();
                 newargv[NAME_BUTTON] = "*";
+
                 if (pid == 0)
                 {
                     const char *path_child = getenv(ENVIRONMENT_VALUE_CHILD);
                     execve("./child", newargv, envp);
                 }
                 else
-                {
-                    increment_child_xx(&child_name);
-                }
+                    incrementChild(&child_name);
+
                 break;
             }
 
@@ -173,16 +171,14 @@ int main(int argc, char *argv[], char *envp[])
                     execve("./child", newargv, envp);
                 }
                 else
-                {
-                    increment_child_xx(&child_name);
-                }
+                    incrementChild(&child_name);
+
                 break;
             }
 
             case 'q':
             {
-                printf("Exitting program\n");
-                exit(0);
+                return 0;
             }
 
             default:
@@ -191,16 +187,17 @@ int main(int argc, char *argv[], char *envp[])
                 break;
             }
             }
-            waitpid(-1, NULL, WNOHANG);
-            getchar();
         } while (1);
+
         free(child_name);
     }
+
     if (flag_alloc_memory)
     {
         for (size_t i = 0; i < INITIAL_SIZE; ++i)
             free(array_variables[i]);
     }
+
     free(array_variables);
 
     return 0;
