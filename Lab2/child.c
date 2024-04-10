@@ -1,6 +1,5 @@
 #include <stdio.h>
 #include <locale.h>
-#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -14,7 +13,7 @@
 #define INITIAL_SIZE 7
 #define MAX_LEN_FILE_STR 255
 
-bool get_variables(const char *path, char ***buffer)
+int getVariables(const char *path, char ***buffer)
 {
     FILE *file = NULL;
 
@@ -31,39 +30,41 @@ bool get_variables(const char *path, char ***buffer)
 
         fclose(file);
 
-        return true;
+        return 1;
     }
 
     perror("File error");
 
-    return false;
+    return 0;
 }
 
-bool find_child_path_envp(char **envp, const char *name_variable)
+int findChildPathEnvp(char **envp, const char *name_variable)
 {
     size_t ind = 0;
     size_t len = strlen(name_variable);
 
-    bool flag_find = false;
+    int flag_find = 0;
 
     while (envp[ind])
     {
-        flag_find = true;
+        flag_find = 1;
         for (size_t i = 0; i < len; ++i)
         {
             if (envp[ind][i] != name_variable[i])
             {
-                flag_find = false;
+                flag_find = 0;
                 break;
             }
         }
-        if (flag_find == true)
+
+        if (flag_find == 1)
             break;
 
         ind++;
     }
-    if (flag_find == false)
-        return false;
+
+    if (flag_find == 0)
+        return 0;
 
     size_t path_len = strlen(name_variable);
     size_t find_str_len = strlen(envp[ind]);
@@ -75,7 +76,7 @@ bool find_child_path_envp(char **envp, const char *name_variable)
 
     printf("\n");
 
-    return true;
+    return 1;
 }
 
 int main(int argc, char *argv[], char *envp[])
@@ -86,26 +87,30 @@ int main(int argc, char *argv[], char *envp[])
 
     char **array_variables = (char **)calloc(INITIAL_SIZE, sizeof(char *));
 
-    if (get_variables(argv[PATH_ENVIRONMENT_FILE], &array_variables))
+    if (getVariables(argv[PATH_ENVIRONMENT_FILE], &array_variables))
     {
         if (strcmp(argv[NAME_BUTTON], "+") == 0)
         {
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
-            {
                 printf("%s\n", getenv(array_variables[i]));
-            }
         }
 
         else if (strcmp(argv[NAME_BUTTON], "*") == 0)
         {
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
-                find_child_path_envp(envp, array_variables[i]);
+            {
+                findChildPathEnvp(envp, array_variables[i]);
+                printf("%s\n", getenv(array_variables[i]));
+            }
         }
 
         else if (strcmp(argv[NAME_BUTTON], "&") == 0)
         {
             for (size_t i = 0; i < INITIAL_SIZE; ++i)
-                find_child_path_envp(envp, array_variables[i]);
+            {
+                findChildPathEnvp(envp, array_variables[i]);
+                printf("%s\n", getenv(array_variables[i]));
+            }
         }
     }
 

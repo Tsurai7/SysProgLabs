@@ -13,6 +13,8 @@
 #define NAME_PROGRAM 0
 #define PATH_ENVIRONMENT_FILE 1
 
+// extern char **__environ;
+
 int compare(const void *a, const void *b)
 {
     return strcoll((const char *)a, (const char *)b);
@@ -131,10 +133,10 @@ int main(int argc, char *argv[], char *envp[])
             case '+':
             {
                 pid_t pid = fork();
-                newargv[NAME_BUTTON] = "+";
 
                 if (pid == 0)
                 {
+                    newargv[NAME_BUTTON] = "+";
                     const char *path_child = getenv(ENVIRONMENT_VALUE_CHILD);
                     execve("./child", newargv, envp);
                 }
@@ -147,12 +149,14 @@ int main(int argc, char *argv[], char *envp[])
             case '*':
             {
                 pid_t pid = fork();
-                newargv[NAME_BUTTON] = "*";
 
                 if (pid == 0)
                 {
-                    const char *path_child = getenv(ENVIRONMENT_VALUE_CHILD);
-                    execve("./child", newargv, envp);
+                    newargv[NAME_BUTTON] = "*";
+                    char *path_child = NULL;
+
+                    if (findChildPathEnvp(envp, &path_child))
+                        execve("./child", newargv, envp);
                 }
                 else
                     incrementChild(&child_name);
@@ -163,13 +167,16 @@ int main(int argc, char *argv[], char *envp[])
             case '&':
             {
                 pid_t pid = fork();
-                newargv[NAME_BUTTON] = "&";
 
                 if (pid == 0)
                 {
-                    const char *path_child = getenv(ENVIRONMENT_VALUE_CHILD);
-                    execve("./child", newargv, envp);
+                    newargv[NAME_BUTTON] = "&";
+                    char *path_child = NULL;
+
+                    if (findChildPathEnvp(envp, &path_child))
+                        execve("./child", newargv, envp);
                 }
+
                 else
                     incrementChild(&child_name);
 
@@ -179,12 +186,6 @@ int main(int argc, char *argv[], char *envp[])
             case 'q':
             {
                 return 0;
-            }
-
-            default:
-            {
-                printf("Unknown command\n");
-                break;
             }
             }
         } while (1);
