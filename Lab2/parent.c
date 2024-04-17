@@ -13,7 +13,7 @@
 #define NAME_PROGRAM 0
 #define PATH_ENVIRONMENT_FILE 1
 
-// extern char **__environ;
+extern char **__environ;
 
 int compare(const void *a, const void *b)
 {

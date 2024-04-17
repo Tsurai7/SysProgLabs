@@ -1,6 +1,3 @@
-// #define _DEFAULT_SOURCE
-// #define _POSIX_C_SOURCE
-
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
@@ -18,7 +15,7 @@ int main(int argc, char **argv, char **envp)
     if (argc < 2)
         return 1;
 
-    // Singnal redifinition to avoid killing parent process
+    // Signal redifinition to avoid killing parent process
     signal(SIGUSR1, sig1_handler);
     signal(SIGUSR2, sig2_handler);
 

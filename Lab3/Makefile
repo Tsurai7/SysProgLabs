@@ -17,3 +17,5 @@ child: child.c Makefile
 clean:
 	rm -f parent
 	rm -f child
+	rm -rf parent.dSYM
+	rm -rf child.dSYM
