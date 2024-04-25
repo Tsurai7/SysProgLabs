@@ -15,7 +15,6 @@ int main(int argc, char **argv, char **envp)
     if (argc < 2)
         return 1;
 
-    // Signal redifinition to avoid killing parent process
     signal(SIGUSR1, sig1_handler);
     signal(SIGUSR2, sig2_handler);
 
@@ -23,16 +22,13 @@ int main(int argc, char **argv, char **envp)
     pid_t child_pids[100];
     char input[100] = "\0";
 
-    // Input with nums
     while (scanf("%s", input))
     {
-        // Child argv
         char *child_argv[2] = {(char *)0};
 
         switch (input[0])
         {
         case '+':
-            // Creating child
             switch (child_pids[child_count++] = fork())
             {
             case -1:
@@ -58,7 +54,6 @@ int main(int argc, char **argv, char **envp)
             }
             break;
 
-        // Killing last child
         case '-':
             if (child_count > 0)
             {
@@ -70,20 +65,17 @@ int main(int argc, char **argv, char **envp)
 
             break;
 
-        // Output list of processes
         case 'l':
             printf("PPID: %d\n", getpid());
             for (int i = child_count - 1; i >= 0; i--)
                 printf("C_%d PID: %d\n", i, child_pids[i]);
             break;
 
-        // Kill all child processes
         case 'k':
             while (child_count > 0)
                 kill(child_pids[child_count-- - 1], SIGKILL);
             break;
 
-        // Stop output
         case 's':
             if (strlen(input) > 1)
             {
@@ -96,7 +88,6 @@ int main(int argc, char **argv, char **envp)
                 kill(0, SIGUSR1);
             break;
 
-        // Allow output
         case 'g':
             if (strlen(input) > 1)
             {
@@ -110,7 +101,6 @@ int main(int argc, char **argv, char **envp)
 
             break;
 
-        // Output one of processes
         case 'p':
             if (strlen(input) <= 1)
                 break;
@@ -124,7 +114,6 @@ int main(int argc, char **argv, char **envp)
 
             break;
 
-        // Kill all processes and quit
         case 'q':
             kill(0, SIGKILL);
             return 0;
