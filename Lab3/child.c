@@ -9,9 +9,10 @@
 
 #define INTERVAL 1000000000L
 
+
 struct pair
 {
-    int x, y;
+    int x, y; 
 };
 
 struct pair pair;
@@ -65,7 +66,7 @@ int main(int argc, char **argv)
     struct itimerval timerval;
     timerval.it_interval.tv_sec = timerval.it_value.tv_sec = 0;
     timerval.it_interval.tv_usec = timerval.it_value.tv_usec = 500;
-
+ 
     setitimer(ITIMER_REAL, &timerval, NULL);
 
     while (1)
