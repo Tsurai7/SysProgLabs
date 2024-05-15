@@ -27,7 +27,6 @@ typedef struct _Ring {
             get;
 }Ring;
 
-//FNV-1 - algorithm hashing
 uint16_t hash_16(const void *data, size_t len) {
     const uint8_t *bytes = data;
     uint16_t hash = 0xFFFF;
@@ -41,8 +40,11 @@ uint16_t hash_16(const void *data, size_t len) {
     return hash;
 }
 
-Message generateMessage() {
+uint16_t random_number(uint16_t n) {
+    return (uint16_t)random() % n;
+}
 
+Message generateMessage() {
     srand((unsigned)time(NULL));
     const char letters[] = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ"; 
     
@@ -50,21 +52,15 @@ Message generateMessage() {
     {
         uint16_t random;
         do {
-            if (getrandom(&random, sizeof(random), 0) < 0){
-                perror("getrandom");
-                exit(1);
-            }
-            message.size = random = random % 257;
-            if(random != 0)
-                break;
-
-        }while(1);
+            random = random_number(257);
+            message.size = random;
+        } while(random == 0);
         
-        for(int i = 0; i < random; message.data[i] = letters[rand() % 53], i++);
-    }
+        for(int i = 0; i < random; message.data[i] = letters[random_number(53)], i++);
+    } 
 
     message.hash = hash_16(message.data, message.size);
-    message.type = rand() % 256;
+    message.type = random_number(256);
 
     return message;
 }
@@ -81,7 +77,6 @@ void sig1_handler(int signo) {
 int main(int argc, char** argv) {
     signal(SIGUSR1, sig1_handler);
 
-    //Getting semaphore
     sem_t* ProducerSem = sem_open("/semproducer", 0);
     if (ProducerSem == SEM_FAILED) {
         perror("Producer sem_open");
@@ -98,7 +93,6 @@ int main(int argc, char** argv) {
     int fileDescriptor;
     Ring* ring;
 
-    //Getting shared mem struct
     if ((fileDescriptor = shm_open("/ringmem", O_RDWR, S_IRUSR | S_IWUSR)) == -1)
         perror("shm_open");
     if ((ring = mmap(NULL, sizeof(Ring), PROT_READ | PROT_WRITE, MAP_SHARED , fileDescriptor, 0)) == MAP_FAILED)//(void*)-1)
@@ -109,7 +103,6 @@ int main(int argc, char** argv) {
         sem_wait(ProducerSem);
         sem_wait(MonoSem);
 
-        //Generating message
         if (ring->count < 10){
             ring->messages[ring->head] = generateMessage();
 

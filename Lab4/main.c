@@ -28,7 +28,6 @@ typedef struct _Ring{
 
 int main(int argc, char** argv)
 {
-    //Initialize semaphores | 0644 - 6 - owner can write and read, 4 - group can read, 4 - other users can read
     sem_t *ProducerSem = sem_open("/semproducer", O_CREAT, 0644, 1),
           *ConsumerSem = sem_open("/semconsumer", O_CREAT, 0644, 1),
           *MonoSem = sem_open("/semmono", O_CREAT, 0644, 1);
@@ -41,10 +40,7 @@ int main(int argc, char** argv)
         return 1;
     }
 
-    //Initialize shared memory
     int fd;
-    // O_CREAT - create, if shared memoty doesn't exist, O_RDWR - open for read and write
-    // S_IRUSR - owner can read, S_IWUSR - owner can write
     if ((fd = shm_open("/ringmem", O_CREAT | O_RDWR, S_IRUSR | S_IWUSR)) == -1)
         perror("shm_open");
 
@@ -52,7 +48,6 @@ int main(int argc, char** argv)
         perror("Ftruncate");
 
     Ring* ring;
-    // MAP_SHARED - the mapping is shared between several processes 
     if ((ring = mmap(NULL, sizeof(Ring), PROT_READ | PROT_WRITE, MAP_SHARED, fd, 0)) == MAP_FAILED) //void*)-1)
         perror("mmap");
 
@@ -122,9 +117,9 @@ int main(int argc, char** argv)
         
         case 'S':
         case 's':
-            sem_wait(MonoSem); //waitng sem > 0 and -1
+            sem_wait(MonoSem);
             printf("---Stat---\nMax count: 10\nCount: %ld\nAdded: %ld\nGetted: %ld\nProducers count: %ld\nConsumers count: %ld\n", ring->count, ring->add, ring->get, prod_count, consumer_count);
-            sem_post(MonoSem); //sem +1
+            sem_post(MonoSem); 
         break;
 
         case 'Q':
@@ -132,9 +127,9 @@ int main(int argc, char** argv)
             while (kill(prod[prod_count-- - 1], SIGUSR1) == 0);
             while (kill(consumer[consumer_count-- - 1], SIGUSR1) == 0);
                
-            munmap(ring, sizeof(Ring)); //canceling the display
+            munmap(ring, sizeof(Ring)); 
             close(fd);
-            shm_unlink("/ringmem"); //delete shared memory from file system
+            shm_unlink("/ringmem"); 
 
             if (sem_close(ProducerSem) == -1) {
                 perror("Sem_close producerSem");
@@ -149,7 +144,6 @@ int main(int argc, char** argv)
                 return 1;
             }
             
-            //delete semaphore from system
             sem_unlink("/semmono");
             sem_unlink("/semproducer");
             sem_unlink("/semconsumer");
