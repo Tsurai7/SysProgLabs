@@ -11,6 +11,7 @@
 #include <sys/random.h>
 #include <time.h>
 
+
 typedef struct _message {
     uint8_t type;
     uint16_t hash;
@@ -95,6 +96,7 @@ int main(int argc, char** argv) {
 
     if ((fileDescriptor = shm_open("/ringmem", O_RDWR, S_IRUSR | S_IWUSR)) == -1)
         perror("shm_open");
+
     if ((ring = mmap(NULL, sizeof(Ring), PROT_READ | PROT_WRITE, MAP_SHARED , fileDescriptor, 0)) == MAP_FAILED)//(void*)-1)
         perror("Mmap");
 

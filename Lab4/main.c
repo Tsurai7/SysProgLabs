@@ -9,12 +9,14 @@
 #include <signal.h>
 #include <fcntl.h>
 
+
 typedef struct _message{
     uint8_t type;
     uint16_t hash;
     uint8_t size;
     char data[259];
 }Message;
+
 
 typedef struct _Ring{
     Message messages[10];

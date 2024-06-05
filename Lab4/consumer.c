@@ -10,6 +10,7 @@
 #include <sys/shm.h>
 #include <unistd.h>
 
+
 typedef struct _message {
     uint8_t type;
     uint16_t hash;
@@ -43,6 +44,7 @@ int main(int argc, char** argv) {
         perror("Consumer sem_open");
         return 1;
     };
+
     sem_t* MonoSem = sem_open("/semmono", 0);
     if (ConsumerSem == SEM_FAILED) {
         perror("Consumer sem_open");
@@ -54,6 +56,7 @@ int main(int argc, char** argv) {
 
     if ((fileDescriptor = shm_open("/ringmem", O_RDWR, S_IRUSR | S_IWUSR)) == -1)
         perror("shm_open");
+
     if ((ring = mmap(NULL, sizeof(Ring), PROT_READ | PROT_WRITE, MAP_SHARED, fileDescriptor, 0)) == (void*)-1)
         perror("Mmap");
 
@@ -72,6 +75,7 @@ int main(int argc, char** argv) {
 
         if (sem_post(MonoSem) != 0)
             perror("Producer semaphore unlock error");
+
         if (sem_post(ConsumerSem) != 0)
             perror("Producer semaphore unlock error");
 
@@ -82,6 +86,7 @@ int main(int argc, char** argv) {
 
     if (sem_close(ConsumerSem) == -1)
         perror("Consumer semaphore close");
+        
     if (sem_close(MonoSem) == -1)
         perror("Consumer semaphore close");
     return 0;

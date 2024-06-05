@@ -74,10 +74,10 @@ sem_t fill_sem, empty_sem;
 pthread_mutex_t ring_mutex;
 int num_prod_threads = 0,
     num_cons_threads = 0;
-//const int max_prod = 10,
-  //        max_cons = 10;
+
 pthread_t consumer_threads[max];
 pthread_t producer_threads[max];
+
 int ring_size = 10;
 char input[3] = {'\0'};
 bool wh = true;
