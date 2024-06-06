@@ -1,16 +1,19 @@
-CC = gcc
-CFLAGS_DEBUG = -g -ggdb -std=c11 -pedantic -W -Wall -Wextra
-CFLAGS_RELEASE = -std=c11 -pedantic -W -Wall -Wextra -Werror
-.PHONY: clean all
-MODE ?= debug
-ifeq ($(MODE), debug)
-	CFLAGS = $(CFLAGS_DEBUG)
-else
-	CFLAGS = $(CFLAGS_RELEASE)
-endif
-all: sort_index
-main: sort_index.c Makefile
-	$(CC) $(CFLAGS) sort_index.c -o sort_index
+CC=gcc
+CFLAGS=-Wall -Wextra -pthread -O2 -D_POSIX_C_SOURCE=200112L
+
+SRCS_FILEGENERATOR=file_generator.c
+SRCS_FILESORTER=file_sorter.c
+
+OBJS_FILEGENERATOR=$(SRCS_FILEGENERATOR:.c=.o)
+OBJS_FILESORTER=$(SRCS_FILESORTER:.c=.o)
+
+all: file_generator file_sorter
+
+file_generator: $(OBJS_FILEGENERATOR)
+	$(CC) $(CFLAGS) $(OBJS_FILEGENERATOR) -o $@
+
+file_sorter: $(OBJS_FILESORTER)
+	$(CC) $(CFLAGS) $(OBJS_FILESORTER) -o $@
+
 clean:
-	rm -f sort_index
-	rm -rf sort_index.dSYM
+	rm -f $(OBJS_FILEGENERATOR) $(OBJS_FILESORTER) file_generator file_sorter

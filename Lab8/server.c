@@ -56,27 +56,27 @@ void execute_dir_args(DIR *__d) {
         if (lstat(fullpath, &sb) == -1) {
             continue;
         }
-        if ((sb.st_mode & __S_IFMT) == __S_IFDIR) {
+        if ((sb.st_mode & S_IFMT) == S_IFDIR) {
+    strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
+    strncat(LIST_DIR, "/", strlen("/"));
+} else if ((sb.st_mode & S_IFMT) == S_IFREG) {
+    strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
+} else if ((sb.st_mode & S_IFMT) == S_IFLNK) {
+    char target_path[MAX_LEN_BUFFER];
+    ssize_t bytes = readlink(fullpath, target_path, sizeof(target_path) - 1);
+    if (bytes != -1) {
+        lstat(target_path, &sb);
+        if ((sb.st_mode & S_IFMT) == S_IFDIR) {
             strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
-            strncat(LIST_DIR, "/", strlen("/"));
-        } else if ((sb.st_mode & __S_IFMT) == __S_IFREG) {
+            strncat(LIST_DIR, LINK_TO_FILE, strlen(LINK_TO_FILE));
+            strncat(LIST_DIR, target_path, strlen(target_path));
+        } else if ((sb.st_mode & S_IFMT) == S_IFDIR) {
             strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
-        } else if ((sb.st_mode & __S_IFMT) == __S_IFLNK) {
-            char target_path[MAX_LEN_BUFFER];
-            ssize_t bytes = readlink(fullpath, target_path, sizeof(target_path) - 1);
-            if (bytes != -1) {
-                lstat(target_path, &sb);
-                if ((sb.st_mode & __S_IFMT) == __S_IFDIR) {
-                    strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
-                    strncat(LIST_DIR, LINK_TO_FILE, strlen(LINK_TO_FILE));
-                    strncat(LIST_DIR, target_path, strlen(target_path));
-                } else if ((sb.st_mode & __S_IFMT) == __S_IFDIR) {
-                    strncat(LIST_DIR, dir->d_name, strlen(dir->d_name));
-                    strncat(LIST_DIR, LINK_TO_LINK, strlen(LINK_TO_LINK));
-                    strncat(LIST_DIR, target_path, strlen(target_path));
-                }
-            }
+            strncat(LIST_DIR, LINK_TO_LINK, strlen(LINK_TO_LINK));
+            strncat(LIST_DIR, target_path, strlen(target_path));
         }
+    }
+}
         strncat(LIST_DIR, "\n", strlen("\n"));
     }
     closedir(__d);

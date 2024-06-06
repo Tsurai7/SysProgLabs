@@ -9,6 +9,7 @@
 #define STRING_MAX_LEN 80
 #define NUM_OF_RECS 10
 #define FILE_NAME "data.bin"
+
 typedef struct record_s {
     char name[STRING_MAX_LEN];
     char address[STRING_MAX_LEN];
