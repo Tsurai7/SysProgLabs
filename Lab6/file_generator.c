@@ -55,6 +55,7 @@ int main(int argc, char *argv[]) {
     char *filename = argv[2];
 
     FILE *file = fopen(filename, "wb");
+
     if (!file) {
         perror("Error opening file");
         return EXIT_FAILURE;
@@ -72,7 +73,7 @@ int main(int argc, char *argv[]) {
 
     fclose(file);
 
-    printf("Файл с %zu записями был сгенерирован успешно: %s\n", amountOfRecords, filename);
+    printf("File with %zu recordsd has been created: %s\n", amountOfRecords, filename);
 
     return EXIT_SUCCESS;
 }

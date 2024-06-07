@@ -114,7 +114,6 @@ bool record_copy(record_t* dest, const record_t* source) {
     return true;
 }
 
-
 void all_records() {
     struct flock parameters;
     parameters.l_type = F_RDLCK;

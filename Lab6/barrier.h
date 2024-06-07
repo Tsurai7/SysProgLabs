@@ -6,6 +6,7 @@
 #include <errno.h>
 
 typedef int pthread_barrierattr_t;
+
 typedef struct {
     pthread_mutex_t mutex;
     pthread_cond_t cond;
